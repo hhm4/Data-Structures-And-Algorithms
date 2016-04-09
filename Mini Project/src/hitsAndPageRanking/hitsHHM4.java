@@ -64,6 +64,7 @@ public class hitsHHM4 {
 //			}
 //			System.out.print("\n");
 //		}
+//		System.out.print("\n");
 	}
 	
 	public void initializeHubAndAuthority(int init){
@@ -183,7 +184,6 @@ public class hitsHHM4 {
 		edg=Integer.parseInt(line.split(" ")[1]);
 		graph=new hitsHHM4(ver,edg);
 		graph.formAdjacencyMatrix(br);
-		System.out.println("\n");
 		graph.formAdjacencyMatrixTranspose();
 		graph.initializeHubAndAuthority(Integer.parseInt(args[1]));
 		graph.displayIterationValues(Integer.parseInt(args[0]));
