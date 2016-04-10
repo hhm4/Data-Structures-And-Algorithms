@@ -63,7 +63,6 @@ public class pgrkHHM4 {
 	
 	public void getPageRank(){
 		
-		
 		for(int i=0;i<this.noOfVertices;i++){
 			float pgrk=0.0f;
 			for(int j=0;j<this.indegree[i].list.size();j++){
@@ -71,7 +70,6 @@ public class pgrkHHM4 {
 				
 				pgrk=pgrk+(this.pageRankPrev[ver]/this.outdegree[ver]);
 			}
-			
 			this.pageRank[i]=(pgrk*this.d)+this.dm;
 		}
 		
@@ -84,8 +82,8 @@ public class pgrkHHM4 {
 	}
 
 	public void displayIterationValues(int noOfIterations){
-		DecimalFormat df = new DecimalFormat("#0.000000");
 		
+		DecimalFormat df = new DecimalFormat("#0.000000");
 		if(noOfIterations==0){
 			int iteration=0;
 			Boolean base=true;
@@ -99,16 +97,12 @@ public class pgrkHHM4 {
 						output=output+"P["+v+"]="+df.format(this.pageRankPrev[v])+" ";
 					}
 					System.out.println(output+"\n");
-					
-					
 				}
 				else{
 					convergence=true;
 					this.getPageRank();
 					output="Iterat";
 					output=output+"  : "+iteration+" :";
-					
-					
 					for (int v=0;v<this.noOfVertices;v++){
 						output=output+"P["+v+"]="+df.format(this.pageRank[v])+" ";
 					}

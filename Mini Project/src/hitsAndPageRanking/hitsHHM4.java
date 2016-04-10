@@ -17,6 +17,8 @@ public class hitsHHM4 {
 	float []hub;
 	float []scaledAuth;
 	float []scaledHub;
+	float []scaledAuthPrev;
+	float []scaledHubPrev;
 	
 	public hitsHHM4(int ver, int edg){
 		this.noOfVertices=ver;
@@ -27,6 +29,8 @@ public class hitsHHM4 {
 		this.hub=new float[this.noOfVertices];
 		this.scaledAuth=new float[this.noOfVertices];
 		this.scaledHub=new float[this.noOfVertices];
+		this.scaledAuthPrev=new float[this.noOfVertices];
+		this.scaledHubPrev=new float[this.noOfVertices];
 	}
 	
 	public void formAdjacencyMatrix(BufferedReader br) throws IOException{
@@ -139,7 +143,46 @@ public class hitsHHM4 {
 		DecimalFormat df = new DecimalFormat("#0.00000");
 		//df.setRoundingMode(RoundingMode.CEILING);
 		if (noOfiterations==0){
-			
+			int iteration=0;
+			Boolean convergence=true;
+			do{
+				convergence=true;
+				String output="";
+				if(iteration==0){
+					
+					for(int i=0;i<this.noOfVertices;i++){
+						this.scaledAuthPrev[i]=-1.0f;
+						this.scaledHubPrev[i]=-1.0f;
+					}
+					output="Base  ";
+				}
+				else{
+					output="Iterat";
+					this.findAuthorityValue();
+					this.findHubValue();
+					this.scaleAuthorityValues();
+					this.scaleHubValues();
+				}
+				output=output+"  : "+iteration+" :";
+				
+				
+				for (int v=0;v<this.noOfVertices;v++){
+					output=output+"A/H["+v+"]="+df.format(this.scaledAuth[v])+"/"+df.format(this.scaledHub[v])+" ";
+				}				
+				System.out.println(output+"\n");
+				for(int c=0;c<this.noOfVertices;c++){
+					float aP=Float.parseFloat(df.format(this.scaledAuthPrev[c]));
+					float a=Float.parseFloat(df.format(this.scaledAuth[c]));
+					float hP=Float.parseFloat(df.format(this.scaledHubPrev[c]));
+					float h=Float.parseFloat(df.format(this.scaledHub[c]));
+					if((aP!=a)||(hP!=h)){
+						convergence=false;
+						break;
+					}
+				}
+				this.pipeAuhHubValues();
+				iteration++;
+			}while(!convergence);
 		}
 		else{
 			for (int i=0;i<=noOfiterations;i++){
@@ -163,9 +206,16 @@ public class hitsHHM4 {
 				System.out.println(output+"\n");
 			}
 		}
-		
 	}
 	
+	private void pipeAuhHubValues() {
+		// TODO Auto-generated method stub
+		for(int d=0;d<this.noOfVertices;d++){
+			this.scaledAuthPrev[d]=this.scaledAuth[d];
+			this.scaledHubPrev[d]=this.scaledHub[d];
+		}
+	}
+
 	public static void main(String []args) throws IOException{
 		
 		hitsHHM4 graph;
