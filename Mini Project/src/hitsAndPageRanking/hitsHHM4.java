@@ -1,224 +1,183 @@
+/* MOHAN HARINARAYANAN cs610 PP 7032 */
 package hitsAndPageRanking;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.util.Arrays;
-
-public class hitsHHM4 {
-
+public class pgrk7032 {
 	int noOfVertices;
 	int noOfEdges;
-	float [][]adjMatrix;
-	float [][]adjMatrixTrans;
-	float []authority;
-	float []hub;
-	float []scaledAuth;
-	float []scaledHub;
-	float []scaledAuthPrev;
-	float []scaledHubPrev;
+	int []outdegree;
+	float d;
+	float dm;
+	AdjacencyList []indegree;
+	float []pageRankPrev;
+	float []pageRank;
 	
-	public hitsHHM4(int ver, int edg){
+	public pgrk7032(int ver,int edg){
 		this.noOfVertices=ver;
 		this.noOfEdges=edg;
-		this.adjMatrix=new float[this.noOfVertices][this.noOfVertices];
-		this.adjMatrixTrans=new float[this.noOfVertices][this.noOfVertices];
-		this.authority=new float[this.noOfVertices];
-		this.hub=new float[this.noOfVertices];
-		this.scaledAuth=new float[this.noOfVertices];
-		this.scaledHub=new float[this.noOfVertices];
-		this.scaledAuthPrev=new float[this.noOfVertices];
-		this.scaledHubPrev=new float[this.noOfVertices];
+		this.d=0.85f;
+		this.dm=(1.0f-d)/(float)this.noOfVertices;
+		this.outdegree=new int[this.noOfVertices];
+		this.pageRankPrev=new float[this.noOfVertices];
+		this.pageRank=new float[this.noOfVertices];
+		this.indegree=new AdjacencyList[this.noOfVertices];
+		for (int i=0;i<this.noOfVertices;i++){
+			this.outdegree[i]=0;
+			this.indegree[i]=new AdjacencyList();
+		}
 	}
 	
-	public void formAdjacencyMatrix(BufferedReader br) throws IOException{
-		
-		for (int i=0;i<this.noOfVertices;i++){
-			for (int j=0;j<this.noOfVertices;j++){
-				this.adjMatrix[i][j]=0.0f;
-			}
-		}
+	public void initializeGraph7032(BufferedReader br) throws IOException{
 		for (int i=0;i<this.noOfEdges;i++){
-			String line=br.readLine();
-			int vert1=Integer.parseInt(line.split(" ")[0]);
-			int vert2=Integer.parseInt(line.split(" ")[1]);
-			this.adjMatrix[vert1][vert2]=1.0f;
+			String line = br.readLine();
+			int ver1=Integer.parseInt(line.split(" ")[0]);
+			int ver2=Integer.parseInt(line.split(" ")[1]);
+			this.indegree[ver2].list.add(ver1);
+			this.outdegree[ver1]++;
 		}
-//		for (int i=0;i<this.noOfVertices;i++){
-//			for (int j=0;j<this.noOfVertices;j++){
-//				System.out.print(this.adjMatrix[i][j]+" ");
-//			}
-//			System.out.print("\n");
-//		}
-		
 	}
 	
-	public void formAdjacencyMatrixTranspose(){
-		
-		for (int i=0;i<this.noOfVertices;i++){
-			for (int j=0;j<this.noOfVertices;j++){
-				this.adjMatrixTrans[j][i]=this.adjMatrix[i][j];
-			}
-		}
-//		for (int i=0;i<this.noOfVertices;i++){
-//			for (int j=0;j<this.noOfVertices;j++){
-//				System.out.print(this.adjMatrixTrans[i][j]+" ");
-//			}
-//			System.out.print("\n");
-//		}
-//		System.out.print("\n");
-	}
-	
-	public void initializeHubAndAuthority(int init){
+	public void initializePageRank7032(int init){
 		
 		float initialValue=0.0f;
-		if(init==0){
-			initialValue =0.0f;
+		if(this.noOfVertices>10){
+			init=-1;
 		}
-		if(init==1){
-			initialValue =1.0f;
-		}
-		if(init==-1){
+		switch(init){
+		case 0:
+			initialValue=0.0f;
+			break;
+		case 1:
+			initialValue=1.0f;
+			break;
+		case -1:
 			initialValue=1.0f/(float)this.noOfVertices;
-		}
-		if(init==-2){
+			break;
+		case -2:
 			initialValue=(float) (1.0f/(float)Math.sqrt(this.noOfVertices));
+			break;			
 		}
-		for(int i=0;i<this.noOfVertices;i++){
-			this.authority[i]=initialValue;
-			this.hub[i]=initialValue;
-			this.scaledAuth[i]=initialValue;
-			this.scaledHub[i]=initialValue;
-		}
-	}
-	
-	public void findHubValue(){
 		for (int i=0;i<this.noOfVertices;i++){
-			float temp=0.0f;
-			for(int j=0;j<this.noOfVertices;j++){
-				temp=temp+this.adjMatrix[i][j]*this.authority[j];
+			this.pageRankPrev[i]=initialValue;
+			this.pageRank[i]=-1;
+		}
+	}
+	
+	public void getPageRank7032(){
+		
+		for(int i=0;i<this.noOfVertices;i++){
+			float pgrk=0.0f;
+			for(int j=0;j<this.indegree[i].list.size();j++){
+				int ver=this.indegree[i].list.get(j);
+				
+				pgrk=pgrk+(this.pageRankPrev[ver]/this.outdegree[ver]);
 			}
-			this.hub[i]=temp;
+			this.pageRank[i]=(pgrk*this.d)+this.dm;
 		}
-	}
-	
-	public void findAuthorityValue(){
 		
-		for (int i=0;i<this.noOfVertices;i++){
-			float temp=0.0f;
-			for(int j=0;j<this.noOfVertices;j++){
-				temp=temp+this.adjMatrixTrans[i][j]*this.hub[j];
-			}
-			this.authority[i]=temp;
-		}
 	}
 	
-	public void scaleHubValues(){
+	public void pipePageRank7032() {
+		for(int i=0;i<this.noOfVertices;i++){
+			this.pageRankPrev[i]=this.pageRank[i];
+		}
+	}
+
+	public void displayIterationValues7032(int noOfIterations){
 		
-		float temp=0.0f;
-		for(int i=0;i<this.noOfVertices;i++){
-			temp=temp+(this.hub[i]*this.hub[i]);
+		DecimalFormat df = new DecimalFormat("#0.000000");
+		Boolean display=true;
+		if(this.noOfVertices>10){
+			noOfIterations=0;
+			display=false;
 		}
-		temp=(float) Math.sqrt(temp);
-		for(int i=0;i<this.noOfVertices;i++){
-			this.scaledHub[i]=this.hub[i]/temp;
-		}
-	}
-	
-	public void scaleAuthorityValues(){
-		
-		float temp=0.0f;
-		for(int i=0;i<this.noOfVertices;i++){
-			temp=temp+(this.authority[i]*this.authority[i]);
-		}
-		temp=(float) Math.sqrt(temp);
-		for(int i=0;i<this.noOfVertices;i++){
-			this.scaledAuth[i]=this.authority[i]/temp;
-		}
-	}
-	
-	public void displayIterationValues(int noOfiterations){
-		DecimalFormat df = new DecimalFormat("#0.00000");
-		//df.setRoundingMode(RoundingMode.CEILING);
-		if (noOfiterations==0){
+		if(noOfIterations==0){
 			int iteration=0;
+			Boolean base=true;
 			Boolean convergence=true;
 			do{
-				convergence=true;
 				String output="";
-				if(iteration==0){
-					
-					for(int i=0;i<this.noOfVertices;i++){
-						this.scaledAuthPrev[i]=-1.0f;
-						this.scaledHubPrev[i]=-1.0f;
+				if(base){
+					output="Base";
+					output=output+"  : 0 : ";
+					for (int v=0;v<this.noOfVertices;v++){
+						output=output+"P["+v+"]="+df.format(this.pageRankPrev[v])+" ";
 					}
-					output="Base  ";
+					if (display)
+						System.out.println(output+"\n");
 				}
 				else{
-					output="Iterat";
-					this.findAuthorityValue();
-					this.findHubValue();
-					this.scaleAuthorityValues();
-					this.scaleHubValues();
+					convergence=true;
+					this.getPageRank7032();
+					output="Iter";
+					output=output+"  : "+iteration+" : ";
+					for (int v=0;v<this.noOfVertices;v++){
+						output=output+"P["+v+"]="+df.format(this.pageRank[v])+" ";
+					}
+					if (display)
+						System.out.println(output+"\n");
+					
 				}
-				output=output+"  : "+iteration+" :";
-				
-				
-				for (int v=0;v<this.noOfVertices;v++){
-					output=output+"A/H["+v+"]="+df.format(this.scaledAuth[v])+"/"+df.format(this.scaledHub[v])+" ";
-				}				
-				System.out.println(output+"\n");
+				iteration++;
 				for(int c=0;c<this.noOfVertices;c++){
-					float aP=Float.parseFloat(df.format(this.scaledAuthPrev[c]));
-					float a=Float.parseFloat(df.format(this.scaledAuth[c]));
-					float hP=Float.parseFloat(df.format(this.scaledHubPrev[c]));
-					float h=Float.parseFloat(df.format(this.scaledHub[c]));
-					if((aP!=a)||(hP!=h)){
+					float a=Float.parseFloat(df.format(this.pageRankPrev[c]));
+					float b=Float.parseFloat(df.format(this.pageRank[c]));
+					
+					if(Math.abs(a-b)>0.00001){
 						convergence=false;
 						break;
 					}
 				}
-				this.pipeAuhHubValues();
-				iteration++;
+				
+				if(!base){
+					this.pipePageRank7032();
+				}
+				base=false;
+				if(convergence&&display!=true){
+					output ="Iter : "+(iteration-1)+" : \n";
+					System.out.println(output);
+					output="";
+					for (int v=0;v<this.noOfVertices;v++){
+						output=output+"P["+v+"]="+df.format(this.pageRank[v])+" \n\n";
+					}
+					System.out.println(output+"\n");
+				}
+					
 			}while(!convergence);
 		}
-		else{
-			for (int i=0;i<=noOfiterations;i++){
+		else {
+			for (int i=0;i<=noOfIterations;i++){
 				String output="";
 				if(i==0){
 					output="Base  ";
+					output=output+"  : "+i+" : ";
+					for (int v=0;v<this.noOfVertices;v++){
+						output=output+"P["+v+"]="+df.format(this.pageRankPrev[v])+" ";
+					}
+					System.out.println(output+"\n");
 				}
 				else{
-					output="Iterat";
-					this.findAuthorityValue();
-					this.findHubValue();
-					this.scaleAuthorityValues();
-					this.scaleHubValues();
+					this.getPageRank7032();
+					this.pipePageRank7032();
+					output="Iter";
+					output=output+"  : "+i+" : ";
+					
+					for (int v=0;v<this.noOfVertices;v++){
+						output=output+"P["+v+"]="+df.format(this.pageRank[v])+" ";
+					}
+					System.out.println(output);
 				}
-				output=output+"  : "+i+" :";
 				
-				
-				for (int v=0;v<this.noOfVertices;v++){
-					output=output+"A/H["+v+"]="+df.format(this.scaledAuth[v])+"/"+df.format(this.scaledHub[v])+" ";
-				}
-				System.out.println(output+"\n");
 			}
 		}
 	}
 	
-	private void pipeAuhHubValues() {
-		// TODO Auto-generated method stub
-		for(int d=0;d<this.noOfVertices;d++){
-			this.scaledAuthPrev[d]=this.scaledAuth[d];
-			this.scaledHubPrev[d]=this.scaledHub[d];
-		}
-	}
-
 	public static void main(String []args) throws IOException{
-		
-		hitsHHM4 graph;
+		pgrk7032 graph;
 		int ver;
 		int edg;
 		String line;
@@ -232,10 +191,17 @@ public class hitsHHM4 {
 		line = br.readLine();
 		ver=Integer.parseInt(line.split(" ")[0]);
 		edg=Integer.parseInt(line.split(" ")[1]);
-		graph=new hitsHHM4(ver,edg);
-		graph.formAdjacencyMatrix(br);
-		graph.formAdjacencyMatrixTranspose();
-		graph.initializeHubAndAuthority(Integer.parseInt(args[1]));
-		graph.displayIterationValues(Integer.parseInt(args[0]));
+		graph=new pgrk7032(ver,edg);
+		graph.initializeGraph7032(br);
+		graph.initializePageRank7032(Integer.parseInt(args[1]));
+		graph.displayIterationValues7032(Integer.parseInt(args[0]));
+	}
+	
+	class AdjacencyList{
+		ArrayList<Integer> list;
+		
+		public AdjacencyList(){
+			list=new ArrayList<Integer>();
+		}
 	}
 }
