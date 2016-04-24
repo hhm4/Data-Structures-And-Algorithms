@@ -1,11 +1,12 @@
+/* MOHAN HARINARAYANAN cs610 PP 7032 */
 package hitsAndPageRanking;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-public class pgrkHHM4 {
+import java.io.BufferedReader;
+import java.io.FileReader;
+public class pgrk7032 {
 	int noOfVertices;
 	int noOfEdges;
 	int []outdegree;
@@ -15,7 +16,7 @@ public class pgrkHHM4 {
 	float []pageRankPrev;
 	float []pageRank;
 	
-	public pgrkHHM4(int ver,int edg){
+	public pgrk7032(int ver,int edg){
 		this.noOfVertices=ver;
 		this.noOfEdges=edg;
 		this.d=0.85f;
@@ -24,14 +25,13 @@ public class pgrkHHM4 {
 		this.pageRankPrev=new float[this.noOfVertices];
 		this.pageRank=new float[this.noOfVertices];
 		this.indegree=new AdjacencyList[this.noOfVertices];
-		//this.indegree=new AdjacencyList[this.noOfVertices];
 		for (int i=0;i<this.noOfVertices;i++){
 			this.outdegree[i]=0;
 			this.indegree[i]=new AdjacencyList();
 		}
 	}
 	
-	public void initializeGraph(BufferedReader br) throws IOException{
+	public void initializeGraph7032(BufferedReader br) throws IOException{
 		for (int i=0;i<this.noOfEdges;i++){
 			String line = br.readLine();
 			int ver1=Integer.parseInt(line.split(" ")[0]);
@@ -41,19 +41,25 @@ public class pgrkHHM4 {
 		}
 	}
 	
-	public void initializePageRank(int init){
+	public void initializePageRank7032(int init){
+		
 		float initialValue=0.0f;
-		if(init ==0){
+		if(this.noOfVertices>10){
+			init=-1;
+		}
+		switch(init){
+		case 0:
 			initialValue=0.0f;
-		}
-		if(init==1){
+			break;
+		case 1:
 			initialValue=1.0f;
-		}
-		if(init==-1){
+			break;
+		case -1:
 			initialValue=1.0f/(float)this.noOfVertices;
-		}
-		if(init==-2){
+			break;
+		case -2:
 			initialValue=(float) (1.0f/(float)Math.sqrt(this.noOfVertices));
+			break;			
 		}
 		for (int i=0;i<this.noOfVertices;i++){
 			this.pageRankPrev[i]=initialValue;
@@ -61,7 +67,7 @@ public class pgrkHHM4 {
 		}
 	}
 	
-	public void getPageRank(){
+	public void getPageRank7032(){
 		
 		for(int i=0;i<this.noOfVertices;i++){
 			float pgrk=0.0f;
@@ -75,15 +81,20 @@ public class pgrkHHM4 {
 		
 	}
 	
-	private void pipePageRank() {
+	public void pipePageRank7032() {
 		for(int i=0;i<this.noOfVertices;i++){
 			this.pageRankPrev[i]=this.pageRank[i];
 		}
 	}
 
-	public void displayIterationValues(int noOfIterations){
+	public void displayIterationValues7032(int noOfIterations){
 		
 		DecimalFormat df = new DecimalFormat("#0.000000");
+		Boolean display=true;
+		if(this.noOfVertices>10){
+			noOfIterations=0;
+			display=false;
+		}
 		if(noOfIterations==0){
 			int iteration=0;
 			Boolean base=true;
@@ -91,38 +102,51 @@ public class pgrkHHM4 {
 			do{
 				String output="";
 				if(base){
-					output="Base  ";
-					output=output+"  : 0 :";
+					output="Base";
+					output=output+"  : 0 : ";
 					for (int v=0;v<this.noOfVertices;v++){
 						output=output+"P["+v+"]="+df.format(this.pageRankPrev[v])+" ";
 					}
-					System.out.println(output+"\n");
+					if (display)
+						System.out.println(output+"\n");
 				}
 				else{
 					convergence=true;
-					this.getPageRank();
-					output="Iterat";
-					output=output+"  : "+iteration+" :";
+					this.getPageRank7032();
+					output="Iter";
+					output=output+"  : "+iteration+" : ";
 					for (int v=0;v<this.noOfVertices;v++){
 						output=output+"P["+v+"]="+df.format(this.pageRank[v])+" ";
 					}
-					System.out.println(output+"\n");
+					if (display)
+						System.out.println(output+"\n");
 					
 				}
 				iteration++;
 				for(int c=0;c<this.noOfVertices;c++){
 					float a=Float.parseFloat(df.format(this.pageRankPrev[c]));
 					float b=Float.parseFloat(df.format(this.pageRank[c]));
-					if(a!=b){
+					
+					if(Math.abs(a-b)>0.00001){
 						convergence=false;
 						break;
 					}
 				}
 				
 				if(!base){
-					this.pipePageRank();
+					this.pipePageRank7032();
 				}
 				base=false;
+				if(convergence&&display!=true){
+					output ="Iter : "+(iteration-1)+" : \n";
+					System.out.println(output);
+					output="";
+					for (int v=0;v<this.noOfVertices;v++){
+						output=output+"P["+v+"]="+df.format(this.pageRank[v])+" \n\n";
+					}
+					System.out.println(output+"\n");
+				}
+					
 			}while(!convergence);
 		}
 		else {
@@ -130,22 +154,22 @@ public class pgrkHHM4 {
 				String output="";
 				if(i==0){
 					output="Base  ";
-					output=output+"  : "+i+" :";
+					output=output+"  : "+i+" : ";
 					for (int v=0;v<this.noOfVertices;v++){
 						output=output+"P["+v+"]="+df.format(this.pageRankPrev[v])+" ";
 					}
 					System.out.println(output+"\n");
 				}
 				else{
-					this.getPageRank();
-					this.pipePageRank();
-					output="Iterat";
-					output=output+"  : "+i+" :";
+					this.getPageRank7032();
+					this.pipePageRank7032();
+					output="Iter";
+					output=output+"  : "+i+" : ";
 					
 					for (int v=0;v<this.noOfVertices;v++){
 						output=output+"P["+v+"]="+df.format(this.pageRank[v])+" ";
 					}
-					System.out.println(output+"\n");
+					System.out.println(output);
 				}
 				
 			}
@@ -153,7 +177,7 @@ public class pgrkHHM4 {
 	}
 	
 	public static void main(String []args) throws IOException{
-		pgrkHHM4 graph;
+		pgrk7032 graph;
 		int ver;
 		int edg;
 		String line;
@@ -167,10 +191,10 @@ public class pgrkHHM4 {
 		line = br.readLine();
 		ver=Integer.parseInt(line.split(" ")[0]);
 		edg=Integer.parseInt(line.split(" ")[1]);
-		graph=new pgrkHHM4(ver,edg);
-		graph.initializeGraph(br);
-		graph.initializePageRank(Integer.parseInt(args[1]));
-		graph.displayIterationValues(Integer.parseInt(args[0]));
+		graph=new pgrk7032(ver,edg);
+		graph.initializeGraph7032(br);
+		graph.initializePageRank7032(Integer.parseInt(args[1]));
+		graph.displayIterationValues7032(Integer.parseInt(args[0]));
 	}
 	
 	class AdjacencyList{
